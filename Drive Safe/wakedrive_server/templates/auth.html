@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="form-container glass">
+    <h2 class="form-title">{{ 'Sign Up' if request.endpoint == 'signup' else 'Welcome Back' }}</h2>
+    <p class="form-subtitle">{{ 'Join WakeDrive' if request.endpoint == 'signup' else 'Login to your account' }}</p>
+
+    <form method="POST" action="">
+        <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" name="email" class="form-control" required placeholder="you@example.com">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" name="password" class="form-control" required placeholder="••••••••">
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            {{ 'Create Account' if request.endpoint == 'signup' else 'Login' }}
+        </button>
+    </form>
+
+    <div class="auth-switch">
+        {% if request.endpoint == 'signup' %}
+            Already have an account? <a href="{{ url_for('index') }}">Login here</a>
+        {% else %}
+            Don't have an account? <a href="{{ url_for('signup') }}">Sign up</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+flask
+flask-cors
+mediapipe
+numpy
+opencv-python
+Pillow
+requests
+python-dotenv

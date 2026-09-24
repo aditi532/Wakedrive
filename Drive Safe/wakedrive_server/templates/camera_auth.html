@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="form-container glass" style="max-width: 600px; text-align: center;">
+    <h2 class="form-title">Verify Face Positioning</h2>
+    <p class="form-subtitle">Please look directly at the camera to ensure it can see you.</p>
+
+    <div style="position: relative; width: 100%; max-width: 400px; margin: 0 auto 2rem auto; border-radius: 16px; overflow: hidden; border: 2px solid var(--accent);">
+        <video id="video" width="100%" autoplay playsinline style="display: block;"></video>
+        <canvas id="canvas" style="display: none;"></canvas>
+    </div>
+
+    <div id="status-message" class="alert" style="display: none;"></div>
+
+    <button id="capture-btn" class="btn btn-primary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 8px;">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+            <circle cx="12" cy="13" r="4"></circle>
+        </svg>
+        Verify Camera Position
+    </button>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const v = document.getElementById('video');
+    const btn = document.getElementById('capture-btn');
+    const msg = document.getElementById('status-message');
+
+    navigator.mediaDevices.getUserMedia({video: true})
+        .then(stream => v.srcObject = stream)
+        .catch(() => showMsg('Camera access denied.', 'error'));
+
+    function showMsg(text, type) {
+        msg.textContent = text;
+        msg.className = 'alert alert-' + type;
+        msg.style.display = 'block';
+    }
+
+    btn.onclick = async () => {
+        btn.disabled = true; 
+        btn.textContent = 'Starting Monitor...';
+        
+        try {
+            const sessionRes = await fetch('/api/session/start', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    driver_name: '{{ session.get("driver_name", "N/A") }}', 
+                    car_number: '{{ session.get("car_number", "N/A") }}', 
+                    blood_type: '{{ session.get("blood_type", "N/A") }}', 
+                    telegram_id: '{{ session.get("telegram_id", "N/A") }}' 
+                })
+            });
+            const sessionData = await sessionRes.json();
+            localStorage.setItem('current_session_id', sessionData.session_id);
+            window.location.href = "{{ url_for('monitor') }}";
+        } catch (e) {
+            showMsg('Network error starting trip.', 'error');
+            btn.disabled = false; 
+            btn.textContent = 'Verify Camera Position';
+        }
+    };
+</script>
+{% endblock %}

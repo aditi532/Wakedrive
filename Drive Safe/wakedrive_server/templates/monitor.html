@@ -1,0 +1,90 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<!-- MediaPipe Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+<style>
+    .monitor-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .video-wrapper {
+        position: relative;
+        width: 100%;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 4px solid var(--success);
+        transition: border-color 0.3s;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .video-wrapper.warning { border-color: var(--warning); }
+    .video-wrapper.danger { border-color: var(--danger); box-shadow: 0 0 40px rgba(239, 68, 68, 0.6); }
+    
+    .video-overlay {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.6);
+        padding: 10px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        backdrop-filter: blur(4px);
+    }
+    .status-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: var(--success);
+    }
+    .status-dot.warning { background-color: var(--warning); }
+    .status-dot.danger { background-color: var(--danger); animation: pulse 1s infinite; }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.5); opacity: 0.5; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="monitor-container">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h2 class="form-title">Live Drowsiness Monitoring</h2>
+        <p class="form-subtitle">Keep your phone mounted safely while driving.</p>
+    </div>
+
+    <div class="video-wrapper" id="video-wrapper">
+        <video id="input_video" width="100%" autoplay playsinline style="display: none;"></video>
+        <canvas id="output_canvas" width="800" height="600" style="width: 100%; height: auto; display: block;"></canvas>
+        <div class="video-overlay" id="status-overlay">
+            <div class="status-dot" id="status-dot"></div>
+            <span id="status-text">Driver Alert</span>
+        </div>
+    </div>
+    
+    <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+        <button id="end-session-btn" class="btn btn-outline" style="width: auto;">End Trip</button>
+    </div>
+    
+    <!-- Hidden audio element for alarm -->
+    <audio id="alarm-audio" loop>
+        <source src="{{ url_for('static', filename='audio/alarm.mp3') }}" type="audio/mpeg">
+    </audio>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/monitor.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WakeDrive - Safety Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0D1B2A;
+            --card-bg: #ffffff;
+            --text-dark: #333333;
+            --text-light: #f5f5f5;
+            --accent: #0D47A1;
+            --accent-hover: #1565C0;
+            --danger: #d32f2f;
+            --warning: #f57c00;
+        }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+        }
+        .header {
+            background-color: var(--card-bg);
+            padding: 20px 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header h1 {
+            margin: 0;
+            color: var(--accent);
+            font-size: 24px;
+        }
+        .container {
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .stat-card {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+        .stat-card h3 {
+            margin: 0 0 10px 0;
+            color: #666;
+            font-size: 16px;
+            text-transform: uppercase;
+        }
+        .stat-card .value {
+            font-size: 36px;
+            font-weight: bold;
+            color: var(--accent);
+            margin: 0;
+        }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        .chart-container {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .table-container {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        .badge.danger { background-color: var(--danger); }
+        .badge.warning { background-color: var(--warning); }
+        .badge.success { background-color: #388e3c; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>WakeDrive — Safety Dashboard</h1>
+    </div>
+
+    <div class="container">
+        <!-- Summary Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Sessions</h3>
+                <p class="value">{{ total_sessions }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Total Drowsy Events</h3>
+                <p class="value">{{ total_drowsy }}</p>
+            </div>
+            <div class="stat-card">
+                <h3>Most Dangerous Time</h3>
+                <p class="value">{{ dangerous_time }}</p>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <canvas id="drowsyBarChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="microLineChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Recent Sessions Table -->
+        <div class="table-container">
+            <h2 style="color: var(--accent); margin-top: 0;">Recent Sessions</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Driver Name</th>
+                        <th>Date</th>
+                        <th>Duration</th>
+                        <th>Microsleeps</th>
+                        <th>Drowsy Events</th>
+                        <th>Emergencies</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for session in recent_sessions %}
+                    <tr>
+                        <td><strong>{{ session.driver_name }}</strong></td>
+                        <td>{{ session.date }}</td>
+                        <td>{{ session.duration }}</td>
+                        <td>
+                            {% if session.microsleeps > 0 %}
+                            <span class="badge warning">{{ session.microsleeps }}</span>
+                            {% else %}
+                            <span class="badge success">0</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if session.drowsy_events > 0 %}
+                            <span class="badge danger">{{ session.drowsy_events }}</span>
+                            {% else %}
+                            <span class="badge success">0</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if session.emergencies > 0 %}
+                            <span class="badge danger" style="background-color: darkred;">{{ session.emergencies }}</span>
+                            {% else %}
+                            <span class="badge success">0</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Data from Flask
+        const barLabels = {{ bar_chart_labels | tojson }};
+        const barData = {{ bar_chart_data | tojson }};
+        
+        const lineLabels = {{ line_chart_labels | tojson }};
+        const lineData = {{ line_chart_data | tojson }};
+
+        // Drowsy Bar Chart
+        const ctxBar = document.getElementById('drowsyBarChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: barLabels,
+                datasets: [{
+                    label: 'Drowsy Events',
+                    data: barData,
+                    backgroundColor: 'rgba(211, 47, 47, 0.7)',
+                    borderColor: 'rgba(211, 47, 47, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Drowsy Events (Last 7 Sessions)'
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, suggestedMax: 5 }
+                }
+            }
+        });
+
+        // Microsleep Line Chart
+        const ctxLine = document.getElementById('microLineChart').getContext('2d');
+        new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: lineLabels,
+                datasets: [{
+                    label: 'Microsleeps',
+                    data: lineData,
+                    backgroundColor: 'rgba(245, 124, 0, 0.2)',
+                    borderColor: 'rgba(245, 124, 0, 1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Microsleeps Over Time'
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, suggestedMax: 10 }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

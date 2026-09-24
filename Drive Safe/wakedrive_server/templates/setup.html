@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="form-container glass" style="max-width: 600px;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="background: rgba(59, 130, 246, 0.2); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto;">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+        </div>
+        <h2 class="form-title" style="margin-bottom: 0;">Safety First</h2>
+        <p class="form-subtitle" style="margin-bottom: 0;">Configure your driver profile</p>
+    </div>
+
+    <form method="POST" action="">
+        <div class="form-group">
+            <label class="form-label">Driver Name</label>
+            <input type="text" name="driver_name" class="form-control" required value="{{ user[0] if user else '' }}" placeholder="John Doe">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Vehicle Number</label>
+            <input type="text" name="car_number" class="form-control" required value="{{ user[1] if user else '' }}" placeholder="ABC-1234">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Blood Group</label>
+            <input type="text" name="blood_type" class="form-control" required value="{{ user[2] if user else '' }}" placeholder="O+">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Telegram Chat ID (For Alerts)</label>
+            <input type="text" name="telegram_id" class="form-control" required value="{{ user[3] if user else '' }}" placeholder="e.g. 123456789">
+            <small style="color: var(--text-muted); display: block; margin-top: 0.5rem; line-height: 1.4;">
+                <strong style="color: var(--accent);">How to find ID:</strong> Search @userinfobot on Telegram, click Start, and copy the 'Id' number.
+            </small>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">
+            Save & Proceed to Verification
+        </button>
+    </form>
+</div>
+{% endblock %}
